@@ -105,6 +105,7 @@ OVERLAPPED
 /* Fluid-Structure Interactions (object in fluid) */
 AREA_FORCE_GLOBAL
 VOLUME_FORCE
+AFFINITY
 
 BOND_ANGLE		requires not BOND_ANGLE_OLD
 

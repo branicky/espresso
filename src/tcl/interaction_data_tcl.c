@@ -54,6 +54,9 @@
 #include "morse_tcl.h"
 #include "dpd_tcl.h"
 #include "soft_sphere_tcl.h"
+#ifdef AFFINITY
+#include "object-in-fluid/affinity_tcl.h"
+#endif
 #include "steppot_tcl.h"
 #include "tab_tcl.h"
 #include "tunable_slip_tcl.h"
@@ -455,6 +458,10 @@ int tclprint_to_result_NonbondedIA(Tcl_Interp *interp, int i, int j)
   if (data->soft_cut > 0.0) tclprint_to_result_softIA(interp,i,j);
 #endif
 
+#ifdef AFFINITY
+  if (data->affinity_cut > 0.0) tclprint_to_result_affinityIA(interp,i,j);
+#endif
+
 #ifdef HAT
   if (data->HAT_r > 0.0) tclprint_to_result_hatIA(interp,i,j);
 #endif
@@ -785,6 +792,10 @@ int tclcommand_inter_parse_non_bonded(Tcl_Interp * interp,
 
 #ifdef SOFT_SPHERE
     REGISTER_NONBONDED("soft-sphere", tclcommand_inter_parse_soft);
+#endif
+
+#ifdef AFFINITY
+    REGISTER_NONBONDED("affinity", tclcommand_inter_parse_affinity);
 #endif
 
 #ifdef HAT

@@ -1,6 +1,7 @@
 /*
-  Copyright (C) 2010,2011 The ESPResSo project
-  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2010 Max-Planck-Institute for Polymer Research, Theory Group, PO Box 3148, 55021 Mainz, Germany
+  Copyright (C) 2010,2011,2012,2013 The ESPResSo project
+  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2010 
+    Max-Planck-Institute for Polymer Research, Theory Group
   
   This file is part of ESPResSo.
   
@@ -17,18 +18,24 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-#ifndef STRETCHLIN_FORCE_TCL_H
-#define STRETCHLIN_FORCE_TCL_H
+#ifndef AFFINITY_TCL_H
+#define AFFINITY_TCL_H
+/** \file affinity_tcl.h
+ * Tcl interface for \ref affinity.h
+ */
 
+#include "../parser.h"
 
-#include "../../tcl/parser.h"
-#include "interaction_data.h"
+#ifdef AFFINITY
 
-/************************************************************/
-/// parse parameters for the stretchLIN_force potential
-int tclcommand_inter_parse_stretchlin_force(Tcl_Interp *interp, int bond_type, int argc, char **argv);
+///
+int tclprint_to_result_affinityIA(Tcl_Interp *interp, int i, int j);
 
-int tclprint_to_result_stretchlinforceIA(Tcl_Interp *interp, Bonded_ia_parameters *params);
+///
+int tclcommand_inter_parse_affinity(Tcl_Interp * interp,
+				int part_type_a, int part_type_b,
+				int argc, char ** argv);
 
 #endif
-//#endif
+
+#endif

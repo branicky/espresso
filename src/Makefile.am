@@ -114,6 +114,7 @@ libEspresso_a_SOURCES += \
 	ljgen.c ljgen.h \
 	morse.c morse.h \
 	soft_sphere.c soft_sphere.h \
+	object-in-fluid/affinity.c object-in-fluid/affinity.h \
 	steppot.c steppot.h \
 	tab.c tab.h \
 	tunable_slip.c tunable_slip.h 
@@ -220,6 +221,7 @@ libEspresso_a_SOURCES += \
 	tcl/ljgen_tcl.c tcl/ljgen_tcl.h \
 	tcl/morse_tcl.c tcl/morse_tcl.h \
 	tcl/soft_sphere_tcl.c tcl/soft_sphere_tcl.h \
+	tcl/object-in-fluid/affinity_tcl.c tcl/object-in-fluid/affinity_tcl.h \
 	tcl/steppot_tcl.c tcl/steppot_tcl.h \
 	tcl/tab_tcl.c tcl/tab_tcl.h \
 	tcl/tunable_slip_tcl.c tcl/tunable_slip_tcl.h

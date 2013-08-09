@@ -347,6 +347,15 @@ typedef struct {
   /*@}*/
 #endif
 
+#ifdef AFFINITY
+  /** \name affinity potential */
+  /*@{*/
+  double affinity_a;
+  double affinity_cut;
+  /*@}*/
+#endif
+
+
 #ifdef HAT
   /** \name hat potential */
   /*@{*/

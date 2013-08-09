@@ -39,6 +39,9 @@
 #include "bmhtf-nacl.h"
 #include "buckingham.h"
 #include "soft_sphere.h"
+#ifdef AFFINITY
+#include "object-in-fluid/affinity.h"
+#endif
 #include "hat.h"
 #include "ljcos.h"
 #include "ljcos2.h"
@@ -165,6 +168,13 @@ MDINLINE double calc_non_bonded_pair_energy(Particle *p1, Particle *p2,
   /* soft-sphere */
   ret  += soft_pair_energy(p1,p2,ia_params,d,dist);
 #endif
+
+#ifdef AFFINITY
+  /* affinity */
+  //ret  += soft_pair_energy(p1,p2,ia_params,d,dist);
+  // energy contribution not implemented yet, maybe not necessary
+#endif
+
 
 #ifdef HAT
   /* hat */
