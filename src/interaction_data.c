@@ -273,7 +273,10 @@ void initialize_ia_params(IA_parameters *params) {
 #endif
 
 #ifdef AFFINITY
-  params->affinity_a =
+  params->affinity_kappa = 
+  params->affinity_r0 =
+  params->affinity_Kon =
+  params->affinity_Koff =
   params->affinity_cut = INACTIVE_CUTOFF;
 #endif
 

@@ -350,7 +350,10 @@ typedef struct {
 #ifdef AFFINITY
   /** \name affinity potential */
   /*@{*/
-  double affinity_a;
+  double affinity_kappa;
+  double affinity_r0;
+  double affinity_Kon;
+  double affinity_Koff;
   double affinity_cut;
   /*@}*/
 #endif
