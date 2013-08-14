@@ -60,7 +60,7 @@ MDINLINE void add_affinity_pair_force(Particle *p1, Particle *p2, IA_parameters 
   double fac=0.0;
   if(CUTOFF_CHECK(dist < ia_params->affinity_cut)) { // Checking whether I am inside the interaction cut-off radius.
     if(dist > 0.0) {
-		printf("%f %f %f\n",p1->p.bond_site[0],p1->p.bond_site[1],p1->p.bond_site[2]);
+		//printf("bond_site: %f %f %f\n",p1->p.bond_site[0],p1->p.bond_site[1],p1->p.bond_site[2]);
 		if ((p1->p.bond_site[0] >= 0) && (p1->p.bond_site[1] >= 0) && (p1->p.bond_site[2] >= 0)) // Checking whether any bond exists
 		{ // Bond exists
 			double folded_pos[3], vec[3], len2, len;
@@ -70,7 +70,7 @@ MDINLINE void add_affinity_pair_force(Particle *p1, Particle *p2, IA_parameters 
 			memcpy(folded_pos, p1->r.p, 3*sizeof(double));
 			memcpy(img, p1->l.i, 3*sizeof(int));
 			fold_position(folded_pos, img);
-			printf("%f %f %f\n",folded_pos[0],folded_pos[1],folded_pos[2]);
+			printf("folded positions: %f %f %f\n",folded_pos[0],folded_pos[1],folded_pos[2]);
 			for(j=0;j<3;j++)
 				vec[j] = p1->p.bond_site[j] - folded_pos[j]; // Shouldn't be the vec vector normalized? Probably yes, so:
 			len2 = sqrlen(vec);
@@ -91,9 +91,10 @@ MDINLINE void add_affinity_pair_force(Particle *p1, Particle *p2, IA_parameters 
 			memcpy(folded_pos, p1->r.p, 3*sizeof(double));
 			memcpy(img, p1->l.i, 3*sizeof(int));
 			fold_position(folded_pos, img);
-
+			//printf("folded positions: %f %f %f\n",folded_pos[0],folded_pos[1],folded_pos[2]);
+			//printf("d: %f %f %f\n",d[0],d[1],d[2]);
 			for(j=0;j<3;j++)
-				p1->p.bond_site[j] = folded_pos[j] + d[j];
+				p1->p.bond_site[j] = folded_pos[j] - d[j];
 		}
 	}
     //ONEPART_TRACE(if(p1->p.identity==check_id) fprintf(stderr,"%d: OPT: affinity   f = (%.3e,%.3e,%.3e) with part id=%d at dist %f fac %.3e\n",this_node,p1->f.f[0],p1->f.f[1],p1->f.f[2],p2->p.identity,dist,fac));
