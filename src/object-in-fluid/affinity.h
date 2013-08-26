@@ -70,7 +70,7 @@ MDINLINE void add_affinity_pair_force(Particle *p1, Particle *p2, IA_parameters 
 			memcpy(folded_pos, p1->r.p, 3*sizeof(double));
 			memcpy(img, p1->l.i, 3*sizeof(int));
 			fold_position(folded_pos, img);
-			printf("folded positions: %f %f %f\n",folded_pos[0],folded_pos[1],folded_pos[2]);
+			//printf("folded positions: %f %f %f\n",folded_pos[0],folded_pos[1],folded_pos[2]);
 			for(j=0;j<3;j++)
 				vec[j] = p1->p.bond_site[j] - folded_pos[j]; // Shouldn't be the vec vector normalized? Probably yes, so:
 			len2 = sqrlen(vec);
