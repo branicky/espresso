@@ -79,7 +79,7 @@ MDINLINE void add_affinity_pair_force(Particle *p1, Particle *p2, IA_parameters 
 			for(j=0;j<3;j++)
 				force[j] += fac * vec[j]/len;
 			// Decision whether I should break the bond:
-			// The random probability mechanism should be implmeented, for now I just decide that bond breaks whenever it is longer than 2*r0.
+			// The random probability mechanism should be implemented, for now I just decide that bond breaks whenever it is longer than 2*r0.
 			if (dist > 2*ia_params->affinity_r0) for(j=0;j<3;j++) p1->p.bond_site[j] = -1;
 		}
 		else if (dist < ia_params->affinity_r0)
