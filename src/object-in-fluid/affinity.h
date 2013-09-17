@@ -31,6 +31,9 @@
 #include "../interaction_data.h"
 #include "../particle_data.h"
 #include "../mol_cut.h"
+#include "../integrate.h"
+#include "../random.h"
+
 
 #ifdef AFFINITY
 
@@ -79,22 +82,37 @@ MDINLINE void add_affinity_pair_force(Particle *p1, Particle *p2, IA_parameters 
 			for(j=0;j<3;j++)
 				force[j] += fac * vec[j]/len;
 			// Decision whether I should break the bond:
-			// The random probability mechanism should be implemented, for now I just decide that bond breaks whenever it is longer than 2*r0.
-			if (dist > 2*ia_params->affinity_r0) for(j=0;j<3;j++) p1->p.bond_site[j] = -1;
+			// The random probability mechanism should be implemented, for now I just decide that bond breaks whenever it is longer than 1.5*r0.
+			if (dist > 1.5*ia_params->affinity_r0) {
+				for(j=0;j<3;j++) p1->p.bond_site[j] = -1;
+			}
 		}
 		else if (dist < ia_params->affinity_r0)
 		{ // Bond does not exist, we are inside of possible bond creation area, lets talk about creating a bond
-			// The random probability mechanism should be implmeented, for now I just creat the bond
-			double folded_pos[3];
-			int img[3];
-			/* fold the coordinates of the particle */
-			memcpy(folded_pos, p1->r.p, 3*sizeof(double));
-			memcpy(img, p1->l.i, 3*sizeof(int));
-			fold_position(folded_pos, img);
-			//printf("folded positions: %f %f %f\n",folded_pos[0],folded_pos[1],folded_pos[2]);
-			//printf("d: %f %f %f\n",d[0],d[1],d[2]);
-			for(j=0;j<3;j++)
-				p1->p.bond_site[j] = folded_pos[j] - d[j];
+			// The random probability mechanism should be implmented, for now I just creat the bond
+			double Pon = 1.0 - exp( - ia_params->affinity_Kon*time_step);
+			// The probability is given by function Pon(x)= 1 - e^(-x) where x is Kon*dt. Here is a table of values of this function, just to have an idea about the values
+			// x		|	0		|	0.25	|	0.5		|	0.75	|	1.0		|	1.5		|	2.0		|	3.0		|	5.0	
+			// Pon(x) 	|	0		|	0.22	| 	0.39	|	0.52	|	0.63	| 	0.77	|	0.84	| 	0.95	|	0.99	
+			 
+			double decide = d_random();
+			if ( decide < Pon ) 
+			{ // the bond will be created only with probability Pon.
+				printf("Creating: Pon = %f, decide = %f", Pon, decide);
+				double folded_pos[3];
+				int img[3];
+				/* fold the coordinates of the particle */
+				memcpy(folded_pos, p1->r.p, 3*sizeof(double));
+				memcpy(img, p1->l.i, 3*sizeof(int));
+				fold_position(folded_pos, img);
+				//printf("folded positions: %f %f %f\n",folded_pos[0],folded_pos[1],folded_pos[2]);
+				//printf("d: %f %f %f\n",d[0],d[1],d[2]);
+				for(j=0;j<3;j++)
+					p1->p.bond_site[j] = folded_pos[j] - d[j];
+			} else {
+				printf("In range, not creating: Pon = %f, decide = %f", Pon, decide);
+
+			}
 		}
 	}
     //ONEPART_TRACE(if(p1->p.identity==check_id) fprintf(stderr,"%d: OPT: affinity   f = (%.3e,%.3e,%.3e) with part id=%d at dist %f fac %.3e\n",this_node,p1->f.f[0],p1->f.f[1],p1->f.f[2],p2->p.identity,dist,fac));
