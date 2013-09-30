@@ -211,6 +211,7 @@ proc add_oif_object { args } {
 	set part_mol -1
 	set part_mass 1
 	set check_output 0
+	set reduce_volume -1
 
 	##### reading the arguments. some of them are mandatory. we check for the mandatory arguments ad the end of this section
     set pos 0
@@ -304,6 +305,15 @@ proc add_oif_object { args } {
 					break
 				}
 				set kv [lindex $args $pos]
+				incr pos
+			}
+			"kv-red" {  
+				incr pos
+				if { $pos >= $n_args } { 
+					puts "error"
+					break
+				}
+				set reduce_volume [lindex $args $pos]
 				incr pos
 			}
 			"trianglesfile" {  
@@ -1034,6 +1044,23 @@ puts "mesh_nedges_bending = $mesh_nedges_bending"
 			set P2 [lreplace $P2 0 2]
 			set P3 [lreplace $P3 0 2]
 		}
+		# Reducing the volume !!!
+		if { $reduce_volume > 0 } { set volume [expr 1.0*$volume*$reduce_volume] }
+		puts "*"
+		puts "*"
+		puts "*"
+		puts "*"
+		puts "Take care, the volume is being reduced by factor $reduce_volume"
+		puts "*"
+		puts "*"
+		puts "*"
+		puts "*"
+		puts "*"
+		# Reducing the volume !!!
+		
+		
+		
+		
 		inter $firstID_VolumeBond volume_force $volume $kv
 		if {$check_output == 1} { puts $fbond "inter $firstID_VolumeBond volume_force $volume $kv" }
 			# First we need to set up the interaction and only afterward we can create the bonds
