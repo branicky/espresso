@@ -98,7 +98,7 @@ MDINLINE void add_affinity_pair_force(Particle *p1, Particle *p2, IA_parameters 
 			double decide = d_random();
 			if ( decide < Pon ) 
 			{ // the bond will be created only with probability Pon.
-				printf("Creating: Pon = %f, decide = %f", Pon, decide);
+				//printf("Creating: Pon = %f, decide = %f", Pon, decide);
 				double folded_pos[3];
 				int img[3];
 				/* fold the coordinates of the particle */
@@ -110,7 +110,7 @@ MDINLINE void add_affinity_pair_force(Particle *p1, Particle *p2, IA_parameters 
 				for(j=0;j<3;j++)
 					p1->p.bond_site[j] = folded_pos[j] - d[j];
 			} else {
-				printf("In range, not creating: Pon = %f, decide = %f", Pon, decide);
+				//printf("In range, not creating: Pon = %f, decide = %f", Pon, decide);
 
 			}
 		}
