@@ -45,3 +45,9 @@
 
 #define MPI_CORE
 #define FORCE_CORE
+
+#define LB
+#define LB_BOUNDARIES
+
+#define AREA_FORCE_GLOBAL
+#define VOLUME_FORCE

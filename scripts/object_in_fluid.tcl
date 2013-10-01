@@ -24,16 +24,25 @@ proc init_objects_in_fluid {} {
 		# denotes the number of oif objects
 	global list oif_nnode
 		# list with the numbers of nodes for each oif object
-	global list oif_ntriangles
-		# list with the numbers of triangles for each oif object
+	global list oif_startingParticles
+		# each object contains particles form some range. oif_startingParticles is list with starting ID of particles from this oif. Clearly, oif_startingParticles + oif_nnode - 1 is the last particle ID from this oif.
 	global list oif_nedges
 		# list with the numbers of edges for each oif object
+	global list oif_ntriangles
+		# list with the numbers of triangles for each oif object
+	global list oif_triangles
+		# contains tripples of vertex IDs for all triangles in all object types. So e.g. if object type 1 has 100 triangles and object type 2 has 200 triangles, then oif_triangles contains 300 rows with three integers in each row. Rows 0 - 99 are triangles from the first object and rows 100 - 299  are rows for the second type of objects.
+	global list oif_startingTriangles
+		# list with starting ID of triangles. 
 	global oif_firstBondId 
 	set oif_firstBondId 0
 	    # denotes the ID of bonds, that can be used for the next oif 
 	global oif_firstPartId
 	set oif_firstPartId 0
 	    # denotes the ID of particle, that can be used for the next oif 
+	global oif_firstTriangleId
+	set oif_firstTriangleId 0
+	    # denotes the ID of triangle, that can be used for the next oif 
 }
 
 proc oif_info { } {
@@ -41,8 +50,12 @@ proc oif_info { } {
 	global oif_nnode
 	global oif_ntriangles
 	global oif_nedges
+	global oif_startingParticles
+	global oif_triangles
+	global oif_startingTriangles
 	global oif_firstBondId
 	global oif_firstPartId
+	global oif_firstTriangleId
 
 	puts " "
 	puts "*************************************"
@@ -64,9 +77,22 @@ proc oif_info { } {
 	foreach item $oif_nedges {
 		puts "$item"	
 	}
+	puts "oif_startingParticles"
+	foreach item $oif_startingParticles {
+		puts "$item"	
+	}
+	#puts "oif_triangles"
+	#foreach item $oif_triangles {
+		#puts "$item"	
+	#}
+	puts "oif_startingTriangles"
+	foreach item $oif_startingTriangles {
+		puts "$item"	
+	}
 	
 	puts "oif_firstBondId: $oif_firstBondId"
 	puts "oif_firstPartId: $oif_firstPartId"
+	puts "oif_firstTriangleId: $oif_firstTriangleId"
 
 	puts " "
 	puts " "
@@ -178,8 +204,12 @@ proc add_oif_object { args } {
 	global oif_nnode
 	global oif_ntriangles
 	global oif_nedges
+	global oif_startingParticles
+	global oif_triangles
+	global oif_startingTriangles
 	global oif_firstBondId
 	global oif_firstPartId
+	global oif_firstTriangleId
 
 	set n_args 0
 		# counts the number of arguments
@@ -204,6 +234,7 @@ proc add_oif_object { args } {
 	set ks 0.0
 	set kslin 0.0
 	set kb 0.0
+	set kb_nonrelaxed -1
 	set kal 0.0
 	set kag 0.0
 	set kv 0.0
@@ -279,6 +310,10 @@ proc add_oif_object { args } {
 				}
 				set kb [lindex $args $pos]
 				incr pos
+			}
+			"kb-nonrelaxed" {  
+				incr pos
+				set kb_nonrelaxed 1
 			}
 			"kal" {  
 				incr pos
@@ -482,9 +517,12 @@ proc add_oif_object { args } {
 			set mesh_triangles($mesh_ntriangles,0) [lindex $line 0]
 			set mesh_triangles($mesh_ntriangles,1) [lindex $line 1]
 			set mesh_triangles($mesh_ntriangles,2) [lindex $line 2]
+			lappend oif_triangles $line
 			incr mesh_ntriangles
 		}
 	}
+	lappend oif_startingTriangles $oif_firstTriangleId
+	set oif_firstTriangleId [expr $oif_firstTriangleId + $mesh_ntriangles]
 
 # Check for data extracted from input files:
 	puts "Data extracted from the input files:"
@@ -666,6 +704,8 @@ puts "mesh_nedges_bending = $mesh_nedges_bending"
 # generating particles:
 	if {$check_output == 1} { set f [open $createPart "w"] }
 	set i $oif_firstPartId
+	lappend oif_startingParticles $oif_firstPartId
+	
 	for {set i $oif_firstPartId} {$i < [expr $mesh_nnodes + $oif_firstPartId]} {incr i} {
 		part $i pos [format %e [expr $mesh_nodes([expr $i - $oif_firstPartId],0)]] [format %e [expr $mesh_nodes([expr $i - $oif_firstPartId],1)]] [format %e [expr $mesh_nodes([expr $i - $oif_firstPartId],2)]] type $part_type mol $part_mol mass $part_mass
 		if {$check_output == 1} { puts $f [format "part $i pos %e %e %e type $part_type mol $part_mol mass $part_mass" [expr $mesh_nodes([expr $i - $oif_firstPartId],0)] [expr $mesh_nodes([expr $i - $oif_firstPartId],1)] [expr $mesh_nodes([expr $i - $oif_firstPartId],2)]] }
@@ -764,6 +804,21 @@ puts "mesh_nedges_bending = $mesh_nedges_bending"
 	    set oif_firstBondId [expr $oif_firstBondId + $n_BenBond]
 	
 		set phi 0.0
+		if { $kb_nonrelaxed > 0 } {
+			puts "**"
+			puts "**"
+			puts "**"
+			puts "**"
+			puts "**"
+			puts "Careful!!!! Bending forces are set to preserve 180 degree angle for all couples of triangles"
+			puts "**"
+			puts "**"
+			puts "**"
+			puts "**"
+			puts "**"
+			puts "**"
+		}
+
 		for { set i 0} { $i < $n_BenBond} {incr i} { 
 				#Run over all edges
 			set p2id $mesh_edges_bending($i,0)
@@ -879,6 +934,11 @@ puts "mesh_nedges_bending = $mesh_nedges_bending"
 			set P2 [lreplace $P2 0 2]
 			set P3 [lreplace $P3 0 2]
 			set P4 [lreplace $P4 0 2]
+
+			# test of bending energy with no preffered shape, alway tending to have 180 degree angle.
+			if { $kb_nonrelaxed > 0 } {
+				set $phi 3.1415926535897931  
+			}
 
 			inter [expr $firstID_BenBond + $i] bending_force [format %e $phi] [format %e $kb]
 			set firstPartId [expr $oif_firstPartId - $mesh_nnodes]
@@ -1044,23 +1104,21 @@ puts "mesh_nedges_bending = $mesh_nedges_bending"
 			set P2 [lreplace $P2 0 2]
 			set P3 [lreplace $P3 0 2]
 		}
-		# Reducing the volume !!!
-		if { $reduce_volume > 0 } { set volume [expr 1.0*$volume*$reduce_volume] }
-		puts "*"
-		puts "*"
-		puts "*"
-		puts "*"
-		puts "Take care, the volume is being reduced by factor $reduce_volume"
-		puts "*"
-		puts "*"
-		puts "*"
-		puts "*"
-		puts "*"
-		# Reducing the volume !!!
-		
-		
-		
-		
+
+		# reducing the volume
+		if { $reduce_volume > 0 } { 
+			set volume [expr 1.0*$volume*$reduce_volume] 
+			puts "**"
+			puts "**"
+			puts "**"
+			puts "Reducing the volume by factor $reduce_volume"
+			puts "**"
+			puts "**"
+			puts "**"
+			puts "**"
+		}
+
+
 		inter $firstID_VolumeBond volume_force $volume $kv
 		if {$check_output == 1} { puts $fbond "inter $firstID_VolumeBond volume_force $volume $kv" }
 			# First we need to set up the interaction and only afterward we can create the bonds
@@ -1082,4 +1140,5 @@ puts "mesh_nedges_bending = $mesh_nedges_bending"
 	lappend oif_ntriangles $mesh_ntriangles
 	lappend oif_nedges $mesh_nedges
 }
+
 

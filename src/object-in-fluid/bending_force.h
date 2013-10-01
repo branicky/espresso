@@ -71,12 +71,23 @@ MDINLINE int calc_bending_force(Particle *p2, Particle *p1, Particle *p3, Partic
 	get_n_triangle(fp2,fp3,fp4,n2);
 	dn2=normr(n2);
 	phi = angle_btw_triangles(fp1,fp2,fp3,fp4);		
+
 	
 	if (iaparams->p.bending_force.phi0 < 0.001 || iaparams->p.bending_force.phi0 > 2*M_PI - 0.001) 
 		printf("bending_force.h, calc_bending_force: Resting angle is close to zero!!!\n");
 
-	aa = (phi-iaparams->p.bending_force.phi0)/iaparams->p.bending_force.phi0;
+//	printf("phi = %f\n",phi);
+	double theta = M_PI - phi; // Here we need to compute theta which is used by Nakamura2013
+//	printf("theta = %f\n",theta);
+	double dist; // Here we need to compute the lenght of the edge p2p3
+	dist = sqrt((fp2[0] - fp3[0])*(fp2[0] - fp3[0]) + (fp2[1] - fp3[1])*(fp2[1] - fp3[1]) + (fp2[2] - fp3[2])*(fp2[2] - fp3[2]));
+//	printf("dist = %f\n",dist);
+	
+	//aa = (phi-iaparams->p.bending_force.phi0)/iaparams->p.bending_force.phi0;
+	aa = - dist*tan(theta/2.0); // Here we compute the force,
+								// The force must be always negative in order to push sides of the triangles to create 180 angle. It can be seen from that when in the original implementation was phi < phi0, we had negative force and sides of the triangles were push towards PI.
 	fac = iaparams->p.bending_force.kb * aa;
+//	printf("bending: fac = %f, aa = %f, kb = %f \n",fac,aa, iaparams->p.bending_force.kb);
 
     penal = (1+1/pow(10*(2*M_PI-phi),2) + 1/pow(10*(phi),2));
 	if (penal > 5.) penal = 5.;

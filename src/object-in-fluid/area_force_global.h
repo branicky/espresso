@@ -199,7 +199,7 @@ MDINLINE void add_area_global_force(double area, int molType){  //first-fold-the
 						h[k]=1.0/3.0 *(p11[k]+p22[k]+p33[k]);
 					}
 					
-					aa=( area - iaparams->p.area_force_global.A0_g) / iaparams->p.area_force_global.A0_g;
+					aa=( area - iaparams->p.area_force_global.A0_g); // NO normalization / iaparams->p.area_force_global.A0_g;
 
 					//aminusb(3,h,p11,rh);				// area_forces for each triangle node
 					vecsub(h,p11,rh);				// area_forces for each triangle node
