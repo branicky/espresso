@@ -979,7 +979,7 @@ proc oif_add_object { args } {
 	set origin_Z 0
 	set part_type -1
 	set part_mol -1
-	set part_mass -1
+	set part_mass 1.0
 	set template_id -1
 	set object_id -1
 	set check_output 0
