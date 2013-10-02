@@ -444,21 +444,21 @@ proc oif_create_template { args } {
 	set mesh_nnodes 0;
 	foreach line $data {
 		if { [llength $line] == 3 } {
-			set mesh_nodes($mesh_nnodes,0) [lindex $line 0]
-			set mesh_nodes($mesh_nnodes,1) [lindex $line 1]
-			set mesh_nodes($mesh_nnodes,2) [lindex $line 2]
+			set mesh_nodes($mesh_nnodes,0) [expr $stretch_X*[lindex $line 0]]
+			set mesh_nodes($mesh_nnodes,1) [expr $stretch_Y*[lindex $line 1]]
+			set mesh_nodes($mesh_nnodes,2) [expr $stretch_Z*[lindex $line 2]]
 			# mesh_nodes is a 2D-array with three coordinates for each node (each node is one line) 
 		        # node $X coordinate y is accessed by $mesh_nodes($X,1)
 			incr mesh_nnodes
 		        
-		        list temp_particle
-		        lappend temp_particle [lindex $line 0]
-			lappend temp_particle [lindex $line 1]
-			lappend temp_particle [lindex $line 2]
-		        lappend oif_template_particles $temp_particle
-		        # update global variable
-		        set temp_particle [lreplace $temp_particle 0 2]
-		        # clear list
+	        list temp_particle
+	        lappend temp_particle [expr $stretch_X*[lindex $line 0]]
+			lappend temp_particle [expr $stretch_Y*[lindex $line 1]]
+			lappend temp_particle [expr $stretch_Z*[lindex $line 2]]
+	        lappend oif_template_particles $temp_particle
+	        # update global variable
+	        set temp_particle [lreplace $temp_particle 0 2]
+	        # clear list
 		}	    
 	}
 
@@ -498,13 +498,6 @@ proc oif_create_template { args } {
 	puts "	nnodes: 	$mesh_nnodes"
 	puts "	ntriangles: 	$mesh_ntriangles"
 
-#--------------------------------------------------------------------------------------------
-# stretching:
-	for {set i 0} {$i < $mesh_nnodes} {incr i} {
-	    set mesh_nodes($i,0) [expr $mesh_nodes($i,0)*$stretch_X]
-	    set mesh_nodes($i,1) [expr $mesh_nodes($i,1)*$stretch_Y]
-	    set mesh_nodes($i,2) [expr $mesh_nodes($i,2)*$stretch_Z]
-	}
 #--------------------------------------------------------------------------------------------
 # creating the list of edges	
 	set mesh_nedges 0
