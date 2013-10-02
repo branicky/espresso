@@ -1001,6 +1001,7 @@ proc oif_add_object { args } {
 					break
 				}
 				set object_id [lindex $args $pos]
+				set part_mol $object_id
 				incr pos
 			}
 			"part-type" {  
@@ -1019,15 +1020,6 @@ proc oif_add_object { args } {
 					break
 				}
 				set template_id [lindex $args $pos]
-				incr pos
-			}
-			"mol" {  
-				incr pos
-				if { $pos >= $n_args } { 
-					puts "error"
-					break
-				}
-				set part_mol [lindex $args $pos]
 				incr pos
 			}
 			"check" {  
@@ -1103,7 +1095,6 @@ proc oif_add_object { args } {
 	set mandatory 1
 	if { $origin_X == 0 &&  $origin_Y == 0 &&  $origin_Z == 0 } { set mandatory 0 }
 	if { $part_type == "-1" } { set mandatory 0 }
-	if { $part_mol == "-1" } { set mandatory 0 }
 	if { $template_id == "-1" } { set mandatory 0 }
 	if { $object_id == "-1" } { set mandatory 0 }
 	
@@ -1259,117 +1250,139 @@ proc oif_add_object { args } {
 
 #--------------------------------------------------------------------------------------------
 # generation of stretching force bonds:
-	if {$check_output == 1} { 
-	       	set fpart [open $partS "w"]
-	}
-
-       	puts "generating stretching force bonds"
-	set firstID_StrInter $start_id_of_ks_interactions 
-	# Stretching is coupled to the edges   
-	set n_StrBond $mesh_nedges 
-	set oif_first_bond_id [expr $oif_first_bond_id+$n_StrBond]
-	  
-       	for {set i 0} {$i < $n_StrBond} {incr i} {
-	    set firstPartId [expr $oif_first_part_id - $mesh_nnodes]
-	    part [expr $mesh_edges($i,0)+$firstPartId] bond [expr $firstID_StrInter + $i] [expr $mesh_edges($i,1) + $firstPartId]
-	    if {$check_output == 1} { 
-		puts $fpart "part [expr $mesh_edges($i,0)+$firstPartId] bond [expr $firstID_StrInter + $i] [expr $mesh_edges($i,1) + $firstPartId]"
+	# template data
+	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter
+	set ks_from_template [lindex $template 3]
+	if { $ks_from_template != 0.0 } {
+		if {$check_output == 1} { 
+		       	set fpart [open $partS "w"]
+		}
+	   	puts "generating stretching force bonds"
+		set firstID_StrInter $start_id_of_ks_interactions 
+		# Stretching is coupled to the edges   
+		set n_StrBond $mesh_nedges 
+		set oif_first_bond_id [expr $oif_first_bond_id+$n_StrBond]
+		  
+	   	for {set i 0} {$i < $n_StrBond} {incr i} {
+		    set firstPartId [expr $oif_first_part_id - $mesh_nnodes]
+		    part [expr $mesh_edges($i,0)+$firstPartId] bond [expr $firstID_StrInter + $i] [expr $mesh_edges($i,1) + $firstPartId]
+		    if {$check_output == 1} { 
+			puts $fpart "part [expr $mesh_edges($i,0)+$firstPartId] bond [expr $firstID_StrInter + $i] [expr $mesh_edges($i,1) + $firstPartId]"
+		    }
+	   	}
+		if {$check_output == 1} { 
+		   close $fpart	   
 	    }
-      	}
-	if {$check_output == 1} { 
-	   close $fpart	   
-       	}
+	}
 
 #--------------------------------------------------------------------------------------------		
 # generation of bending force bonds:
-	if {$check_output == 1} { 
-	    set fpart [open $partB "w"]
-	}
+	# template data
+	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter
+	set kb_from_template [lindex $template 5]
+	if { $kb_from_template != 0.0 } {
+		if {$check_output == 1} { 
+		    set fpart [open $partB "w"]
+		}
+			
+		puts "generating bending force bonds"
+		set firstID_BenInter $start_id_of_kb_interactions
+		set n_BenBond $mesh_nedges
+		# Bending is coupled to the angles between triangles sharing the same edge
+		set oif_first_bond_id [expr $oif_first_bond_id + $n_BenBond]
 		
-	puts "generating bending force bonds"
-	set firstID_BenInter $start_id_of_kb_interactions
-	set n_BenBond $mesh_nedges
-	# Bending is coupled to the angles between triangles sharing the same edge
-	set oif_first_bond_id [expr $oif_first_bond_id + $n_BenBond]
+		for {set i 0} {$i < $n_BenBond} {incr i} {
 	
-	for {set i 0} {$i < $n_BenBond} {incr i} {
-
-	    set firstPartId [expr $oif_first_part_id - $mesh_nnodes]
-
-	    part [expr $bending_incidences($i,1) + $firstPartId] bond [expr $firstID_BenInter + $i] [expr $bending_incidences($i,0) + $firstPartId] [expr $bending_incidences($i,2) + $firstPartId] [expr $bending_incidences($i,3) + $firstPartId]
-
-	    if {$check_output == 1} { 
-		puts $fpart "part [expr $bending_incidences($i,1) + $firstPartId] bond [expr $firstID_BenInter + $i] [expr $bending_incidences($i,0) + $firstPartId] [expr $bending_incidences($i,2) + $firstPartId] [expr $bending_incidences($i,3) + $firstPartId]"
-	    }
-	}
-	if {$check_output == 1} { 
-	    close $fpart	
-	}
+		    set firstPartId [expr $oif_first_part_id - $mesh_nnodes]
 	
+		    part [expr $bending_incidences($i,1) + $firstPartId] bond [expr $firstID_BenInter + $i] [expr $bending_incidences($i,0) + $firstPartId] [expr $bending_incidences($i,2) + $firstPartId] [expr $bending_incidences($i,3) + $firstPartId]
+	
+		    if {$check_output == 1} { 
+			puts $fpart "part [expr $bending_incidences($i,1) + $firstPartId] bond [expr $firstID_BenInter + $i] [expr $bending_incidences($i,0) + $firstPartId] [expr $bending_incidences($i,2) + $firstPartId] [expr $bending_incidences($i,3) + $firstPartId]"
+		    }
+		}
+		if {$check_output == 1} { 
+		    close $fpart	
+		}
+	}
 #--------------------------------------------------------------------------------------------
 # generation of local area force bonds
-	if {$check_output == 1} { 
-		set fpart [open $partAlocal "w"]
-	}
-	puts "generating local area force bonds"
-	set firstID_localAreaInter $start_id_of_kal_interactions
-	set n_localAreaBond $mesh_ntriangles
-	# Area is coupled to the triangles
-	set oif_first_bond_id [expr $oif_first_bond_id + $n_localAreaBond]
+	# template data
+	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter
+	set kal_from_template [lindex $template 7]
+	if { $kal_from_template != 0.0 } {
 	
-       	for {set i 0} {$i < $n_localAreaBond} {incr i} {
-	    set firstPartId [expr $oif_first_part_id - $mesh_nnodes]
-	    part [expr $mesh_triangles($i,0) + $firstPartId] bond [expr $firstID_localAreaInter + $i] [expr $mesh_triangles($i,1) + $firstPartId] [expr $mesh_triangles($i,2) + $firstPartId]
-	    if {$check_output == 1} { 
-		puts $fpart "part [expr $mesh_triangles($i,0) + $firstPartId] bond [expr $firstID_localAreaInter + $i] [expr $mesh_triangles($i,1) + $firstPartId] [expr $mesh_triangles($i,2) + $firstPartId]"
-	    }
-       	}
-	if {$check_output == 1} {
-			close $fpart
+		if {$check_output == 1} { 
+			set fpart [open $partAlocal "w"]
+		}
+		puts "generating local area force bonds"
+		set firstID_localAreaInter $start_id_of_kal_interactions
+		set n_localAreaBond $mesh_ntriangles
+		# Area is coupled to the triangles
+		set oif_first_bond_id [expr $oif_first_bond_id + $n_localAreaBond]
+		
+	       	for {set i 0} {$i < $n_localAreaBond} {incr i} {
+		    set firstPartId [expr $oif_first_part_id - $mesh_nnodes]
+		    part [expr $mesh_triangles($i,0) + $firstPartId] bond [expr $firstID_localAreaInter + $i] [expr $mesh_triangles($i,1) + $firstPartId] [expr $mesh_triangles($i,2) + $firstPartId]
+		    if {$check_output == 1} { 
+			puts $fpart "part [expr $mesh_triangles($i,0) + $firstPartId] bond [expr $firstID_localAreaInter + $i] [expr $mesh_triangles($i,1) + $firstPartId] [expr $mesh_triangles($i,2) + $firstPartId]"
+		    }
+	       	}
+		if {$check_output == 1} {
+				close $fpart
+		}
 	}
-
 #--------------------------------------------------------------------------------------------
 # generation of global area force bonds
-	if {$check_output == 1} { 
-	    set fpart [open $partAglobal "w"]
-       	}
-	puts "generating global area force bonds"
-	set firstID_globalAreaInter $start_id_of_kag_interactions
-	set n_globalAreaBond 1
-	set oif_first_bond_id [expr $oif_first_bond_id + $n_globalAreaBond]
-
-	for {set i 0} {$i < $mesh_ntriangles} {incr i} {
-	    set firstPartId [expr $oif_first_part_id - $mesh_nnodes]
-	    if {$check_output == 1} { 
-		puts $fpart "part [expr $mesh_triangles($i,0) + $firstPartId] bond $firstID_globalAreaInter [expr $mesh_triangles($i,1) + $firstPartId] [expr $mesh_triangles($i,2) + $firstPartId]" 
-	    }
-	    part [expr $mesh_triangles($i,0) + $firstPartId] bond $firstID_globalAreaInter [expr $mesh_triangles($i,1) + $firstPartId] [expr $mesh_triangles($i,2) + $firstPartId]
-	}
-	if {$check_output == 1} { 
-	    close $fpart
-       	}
+	# template data
+	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter
+	set kag_from_template [lindex $template 9]
+	if { $kag_from_template != 0.0 } {
 	
+		if {$check_output == 1} { 
+		    set fpart [open $partAglobal "w"]
+	       	}
+		puts "generating global area force bonds"
+		set firstID_globalAreaInter $start_id_of_kag_interactions
+		set n_globalAreaBond 1
+		set oif_first_bond_id [expr $oif_first_bond_id + $n_globalAreaBond]
+	
+		for {set i 0} {$i < $mesh_ntriangles} {incr i} {
+		    set firstPartId [expr $oif_first_part_id - $mesh_nnodes]
+		    if {$check_output == 1} { 
+			puts $fpart "part [expr $mesh_triangles($i,0) + $firstPartId] bond $firstID_globalAreaInter [expr $mesh_triangles($i,1) + $firstPartId] [expr $mesh_triangles($i,2) + $firstPartId]" 
+		    }
+		    part [expr $mesh_triangles($i,0) + $firstPartId] bond $firstID_globalAreaInter [expr $mesh_triangles($i,1) + $firstPartId] [expr $mesh_triangles($i,2) + $firstPartId]
+		}
+		if {$check_output == 1} { 
+		    close $fpart
+	       	}
+	}
 #--------------------------------------------------------------------------------------------	
 # generation of volume force bonds
-	if {$check_output == 1} { 
-	    set fpart [open $partV "w"]
-       	}
-	puts "generating volume force bonds"
-	set firstID_VolumeInter $start_id_of_kv_interactions
-	set n_VolumeBond 1
-	set oif_first_bond_id [expr $oif_first_bond_id + $n_VolumeBond]
-	
-	for {set i 0} {$i < $mesh_ntriangles} {incr i} {
-	    set firstPartId [expr $oif_first_part_id - $mesh_nnodes]
-	    if {$check_output == 1} { 
-		puts $fpart "part [expr $mesh_triangles($i,0) + $firstPartId] bond $firstID_VolumeInter [expr $mesh_triangles($i,1) + $firstPartId] [expr $mesh_triangles($i,2) +$firstPartId]" 
-	    }
-	    part [expr $mesh_triangles($i,0) + $firstPartId] bond $firstID_VolumeInter [expr $mesh_triangles($i,1) + $firstPartId] [expr $mesh_triangles($i,2) +$firstPartId]
+	# template data
+	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter
+	set kv_from_template [lindex $template 11]
+	if { $kv_from_template != 0.0 } {
+		if {$check_output == 1} { 
+		    set fpart [open $partV "w"]
+	       	}
+		puts "generating volume force bonds"
+		set firstID_VolumeInter $start_id_of_kv_interactions
+		set n_VolumeBond 1
+		set oif_first_bond_id [expr $oif_first_bond_id + $n_VolumeBond]
+		
+		for {set i 0} {$i < $mesh_ntriangles} {incr i} {
+		    set firstPartId [expr $oif_first_part_id - $mesh_nnodes]
+		    if {$check_output == 1} { 
+			puts $fpart "part [expr $mesh_triangles($i,0) + $firstPartId] bond $firstID_VolumeInter [expr $mesh_triangles($i,1) + $firstPartId] [expr $mesh_triangles($i,2) +$firstPartId]" 
+		    }
+		    part [expr $mesh_triangles($i,0) + $firstPartId] bond $firstID_VolumeInter [expr $mesh_triangles($i,1) + $firstPartId] [expr $mesh_triangles($i,2) +$firstPartId]
+		}
+		if {$check_output == 1} { 
+		    close $fpart		
+		}
 	}
-	if {$check_output == 1} { 
-	    close $fpart		
-	}
-	
 #--------------------------------------------------------------------------------------------	
 # update global oif-variables
 	incr oif_n_objects
