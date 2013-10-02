@@ -52,7 +52,7 @@ proc oif_init {} {
     # 2D list of existing templates of oif objects containing rows with data. One row describes parameters of one object template. One row consists of X elements. The order of the elements is crucial. Structure of one row: num_of_particles, num_of_edges, num_of_triangles, ks, start_id_of_ks_interaction, kb, start_id_of_kb_interaction, kal, start_id_of_kal_interaction, kag, start_id_of_kag_interaction, kv, start_id_of_kv_interaction
 
     global list oif_objects
-    # 2D list of existing objects containing rows with data. One row describes parameters of one object. One row consists of X elements. The order of the elements is crucial. Structure of one row: template_id, part_type
+    # 2D list of existing objects containing rows with data. One row describes parameters of one object. One row consists of X elements. The order of the elements is crucial. Structure of one row: template_id, part_type, part_mass
 
     global list oif_template_particles
     # list containing triplets of coordinates of all particles of all templates that will be used when creating objects. First num_of_particles of them belong to the first template. Next num_of_particles belong to the second template, etc. Note: these are not actual espresso particles, but rather node coordinates that will serve as template for the actual objects. 
@@ -407,6 +407,7 @@ proc oif_create_template { args } {
 	set mandatory 1
 	if { $filenamenodes == "" } { set mandatory 0 }
 	if { $filenametriangles == "" } { set mandatory 0 }
+	if { $template_id == -1 } { set mandatory 0 }
 	
 	if { $mandatory == 0 } { 
 		puts "Something went wrong with mandatory arguments for template creator"  
@@ -442,11 +443,14 @@ proc oif_create_template { args } {
 	close $fp
 	set data [split $file_data "\n"]
 	set mesh_nnodes 0;
+	# template must be stretched first
+	puts "I am stretching!!! $stretch_X $stretch_Y $stretch_Z"
 	foreach line $data {
 		if { [llength $line] == 3 } {
 			set mesh_nodes($mesh_nnodes,0) [expr $stretch_X*[lindex $line 0]]
 			set mesh_nodes($mesh_nnodes,1) [expr $stretch_Y*[lindex $line 1]]
 			set mesh_nodes($mesh_nnodes,2) [expr $stretch_Z*[lindex $line 2]]
+			
 			# mesh_nodes is a 2D-array with three coordinates for each node (each node is one line) 
 		        # node $X coordinate y is accessed by $mesh_nodes($X,1)
 			incr mesh_nnodes
@@ -1020,15 +1024,6 @@ proc oif_add_object { args } {
 					break
 				}
 				set template_id [lindex $args $pos]
-				incr pos
-			}
-			"check" {  
-				incr pos
-				if { $pos >= $n_args } { 
-					puts "error"
-					break
-				}
-				set check_output [lindex $args $pos]
 				incr pos
 			}
 			"rotate" {
