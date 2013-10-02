@@ -1177,14 +1177,18 @@ proc oif_add_object { args } {
 	}
 
 	# recover bending incidences of the given template	
-	for {set i 0} {$i < $mesh_nedges} {incr i} {
-	    set bending_quartet [lindex $oif_template_bending_incidences [expr $start_id_of_bending_incidences+$i]]
-	    set bending_incidences($i,0) [lindex $bending_quartet 0]
-	    set bending_incidences($i,1) [lindex $bending_quartet 1]
-	    set bending_incidences($i,2) [lindex $bending_quartet 2]
-	    set bending_incidences($i,3) [lindex $bending_quartet 3]
+	# template data:
+	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter
+	set kb_from_template [lindex $template 5]
+	if { $kb_from_template != 0.0 } {
+		for {set i 0} {$i < $mesh_nedges} {incr i} {
+		    set bending_quartet [lindex $oif_template_bending_incidences [expr $start_id_of_bending_incidences+$i]]
+		    set bending_incidences($i,0) [lindex $bending_quartet 0]
+		    set bending_incidences($i,1) [lindex $bending_quartet 1]
+		    set bending_incidences($i,2) [lindex $bending_quartet 2]
+		    set bending_incidences($i,3) [lindex $bending_quartet 3]
+		}
 	}
-
 #--------------------------------------------------------------------------------------------
 # some variables for rotation
 	set ca [expr cos($rotate_X)];
