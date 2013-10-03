@@ -1399,11 +1399,11 @@ proc oif_object_set { args } {
 	global oif_ntriangles
 	global oif_nedges
 	global oif_triangles
-	global oif_startingParticles
 	global oif_startingTriangles
 	global oif_firstBondId
 	global oif_firstPartId
 	global oif_objects
+	global oif_object_starting_particles
 
 
 	set n_args 0
@@ -1611,7 +1611,6 @@ proc oif_object_output { args } {
 	global oif_nedges
 	global oif_triangles
 	global oif_object_starting_particles
-	global oif_startingTriangles
 	global oif_firstBondId
 	global oif_firstPartId
 	global oif_firstTriangleId
@@ -1745,7 +1744,6 @@ proc oif_object_analyze { args } {
 	global oif_nedges
 	global oif_triangles
 	global oif_object_starting_particles
-	global oif_startingTriangles
 	global oif_firstBondId
 	global oif_firstPartId
 	global oif_firstTriangleId
@@ -2071,7 +2069,6 @@ proc oif_mesh_analyze { args } {
 	global oif_nedges
 	global oif_triangles
 	global oif_object_starting_particles
-	global oif_startingTriangles
 	global oif_firstBondId
 	global oif_firstPartId
 
