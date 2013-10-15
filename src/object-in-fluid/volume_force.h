@@ -197,7 +197,7 @@ MDINLINE void add_volume_force(double volume, int molType){  //first-fold-then-t
 					A=area_triangle(p11,p22,p33);
 					{
 				}
-					vv=(volume - iaparams->p.volume_force.V0)/iaparams->p.volume_force.V0;
+					vv=(volume - iaparams->p.volume_force.V0); // NO NORMALIZATION /iaparams->p.volume_force.V0;
 					
 					for(k=0;k<3;k++) {
 						force[k]=iaparams->p.volume_force.kv * vv * A * norm[k]/dn * 1.0 / 3.0;

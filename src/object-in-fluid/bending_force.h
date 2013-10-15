@@ -75,8 +75,8 @@ MDINLINE int calc_bending_force(Particle *p2, Particle *p1, Particle *p3, Partic
 	if (iaparams->p.bending_force.phi0 < 0.001 || iaparams->p.bending_force.phi0 > 2*M_PI - 0.001) 
 		printf("bending_force.h, calc_bending_force: Resting angle is close to zero!!!\n");
 
-	aa = (phi-iaparams->p.bending_force.phi0)/iaparams->p.bending_force.phi0;
-	fac = iaparams->p.bending_force.kb * aa;
+	aa = (phi-iaparams->p.bending_force.phi0);// NO NORMALIZATION /iaparams->p.bending_force.phi0;
+	fac = iaparams->p.bending_force.kb * sin(aa);
 
     penal = (1+1/pow(10*(2*M_PI-phi),2) + 1/pow(10*(phi),2));
 	if (penal > 5.) penal = 5.;

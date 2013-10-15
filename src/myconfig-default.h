@@ -37,6 +37,7 @@
 #define LENNARD_JONES
 #define LENNARD_JONES_GENERIC
 #define MORSE
+
 #define LJCOS
 #define LJCOS2
 #define BUCKINGHAM
@@ -45,3 +46,9 @@
 
 #define MPI_CORE
 #define FORCE_CORE
+
+#define AREA_FORCE_GLOBAL
+#define VOLUME_FORCE
+
+#define LB
+#define LB_BOUNDARIES
