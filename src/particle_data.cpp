@@ -130,6 +130,11 @@ void init_particle(Particle *part)
   part->p.rotation =1;
 #endif
 
+#ifdef AFFINITY
+  part->p.bond_site[0] = -1.0;
+  part->p.bond_site[1] = -1.0;
+  part->p.bond_site[2] = -1.0;
+#endif
 
 #ifdef ELECTROSTATICS
   part->p.q        = 0.0;
@@ -681,6 +686,25 @@ int set_particle_rotation(int part, int rot)
   return ES_OK;
 }
 #endif
+
+#ifdef AFFINITY
+int set_particle_affinity(int part, double bond_site[3])
+{
+  int pnode;
+  if (!particle_node)
+    build_particle_node();
+
+  if (part < 0 || part > max_seen_particle)
+    return ES_ERROR;
+  pnode = particle_node[part];
+
+  if (pnode == -1)
+    return ES_ERROR;
+  mpi_send_affinity(pnode, part, bond_site);
+  return ES_OK;
+}
+#endif
+
 
 #ifdef DIPOLES
 int set_particle_dipm(int part, double dipm)

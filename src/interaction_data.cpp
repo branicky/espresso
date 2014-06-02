@@ -45,6 +45,9 @@
 #include "gaussian.hpp"
 #include "buckingham.hpp"
 #include "soft_sphere.hpp"
+#ifdef AFFINITY
+#include "object-in-fluid/affinity.hpp"
+#endif
 #include "hat.hpp"
 #include "tab.hpp"
 #include "overlap.hpp"
@@ -229,6 +232,14 @@ void initialize_ia_params(IA_parameters *params) {
     params->soft_n =
     params->soft_offset = 0.0;
   params->soft_cut = INACTIVE_CUTOFF;
+#endif
+
+#ifdef AFFINITY
+  params->affinity_kappa = 
+  params->affinity_r0 =
+  params->affinity_Kon =
+  params->affinity_Koff =
+  params->affinity_cut = INACTIVE_CUTOFF;
 #endif
 
 #ifdef HAT
@@ -564,6 +575,11 @@ static void recalc_maximal_cutoff_nonbonded()
 #ifdef SOFT_SPHERE
       if (max_cut_current < data->soft_cut)
 	max_cut_current = data->soft_cut;
+#endif
+
+#ifdef AFFINITY
+      if (max_cut_current < data->affinity_cut)
+	max_cut_current = data->affinity_cut;
 #endif
 
 #ifdef HAT

@@ -83,13 +83,13 @@ proc oif_info { } {
 	global oif_first_bond_id
 	global oif_first_part_id
 	global oif_first_inter_id
-	global oif_templates
-	global oif_template_particles
+    global oif_templates
+    global oif_template_particles
 	global oif_template_edges
-	global oif_template_triangles
+    global oif_template_triangles
 	global oif_template_bending_incidences
-	global oif_object_starting_particles
-	global oif_template_starting_triangles
+    global oif_object_starting_particles
+    global oif_template_starting_triangles
 
 	puts " "
 	puts "*************************************"
@@ -183,16 +183,16 @@ proc area_triangle {a b c} {
 	upvar $b gb 
 	upvar $c gc 
 
-	set area 0
+	set area 0;
 	set n {0 0 0} 
 	
-	get_n_triangle ga gb gc n
+	get_n_triangle ga gb gc n;
 	set nx [lindex $n 0]
 	set ny [lindex $n 1]
 	set nz [lindex $n 2]
 
 	set area [expr 0.5*sqrt($nx*$nx + $ny*$ny + $nz*$nz)]
-	return $area
+	return $area;
 }
 
 proc angle_btw_triangles {P1 P2 P3 P4 phi} {
@@ -215,7 +215,7 @@ proc angle_btw_triangles {P1 P2 P3 P4 phi} {
 	set n2y [lindex $n2 1]
 	set n2z [lindex $n2 2]
 	
-	set tmp11 [expr $n1x*$n2x + $n1y*$n2y + $n1z*$n2z]
+	set tmp11 [expr $n1x*$n2x + $n1y*$n2y + $n1z*$n2z];
 	set tmp11 [expr $tmp11*abs($tmp11)]
 	set tmp22 [expr $n1x*$n1x + $n1y*$n1y + $n1z*$n1z]
 	set tmp33 [expr $n2x*$n2x + $n2y*$n2y + $n2z*$n2z]
@@ -413,20 +413,10 @@ proc oif_create_template { args } {
 		puts "Something went wrong with mandatory arguments for template creator"  
 		return
 	}
-	
-#--------------------------------------------------------------------------------------------	
-# checking whether correct template-id was given
-	if { $template_id != $oif_n_templates } {
-		puts "error: Cannot create a template with template_id $template_id,"
-		puts "	because either one such template already exists or the template_id does not follow consecutively."
-		puts "	The next available template_id is $oif_n_templates."
-		exit	
-	}
 
 #--------------------------------------------------------------------------------------------
 # set files for output check
 	if {$check_output == 1} {
-
 		set bondS "TMP/noGbondsStretching$template_id"
 		set bondB "TMP/noGbondsBending$template_id"
 		set bondAlocal "TMP/noGbondsAreaLocal$template_id"
@@ -452,10 +442,9 @@ proc oif_create_template { args } {
 	set file_data [read $fp]
 	close $fp
 	set data [split $file_data "\n"]
+	set mesh_nnodes 0;
 
 	# template must be stretched first
-	set mesh_nnodes 0
-
 	foreach line $data {
 		if { [llength $line] == 3 } {
 			set mesh_nodes($mesh_nnodes,0) [expr $stretch_X*[lindex $line 0]]
@@ -484,13 +473,11 @@ proc oif_create_template { args } {
 	set file_data [read $fp]
 	close $fp
 	set data [split $file_data "\n"]
-
-	set mesh_ntriangles 0
+	set mesh_ntriangles 0;
 	# setting the first triangle id for the currently created template
 	if {$template_id > 0 } { 
 		lappend oif_template_starting_triangles [llength $oif_template_triangles] 
 	} else { lappend oif_template_starting_triangles 0 }
-
 	foreach line $data {
 		if { [llength $line] == 3 } {
 			set mesh_triangles($mesh_ntriangles,0) [lindex $line 0]
@@ -517,7 +504,6 @@ proc oif_create_template { args } {
 
 #--------------------------------------------------------------------------------------------
 # creating the list of edges	
-
 	set mesh_nedges 0
 	
 	for {set i 0} {$i < $mesh_ntriangles} {incr i} {
@@ -1012,7 +998,7 @@ proc oif_add_object { args } {
 				set part_mass [lindex $args $pos]
 				incr pos
 			}
-			"object-id" {  
+	        "object-id" {  
 				incr pos
 				if { $pos >= $n_args } { 
 					puts "error"
@@ -1031,7 +1017,7 @@ proc oif_add_object { args } {
 				set part_type [lindex $args $pos]
 				incr pos
 			}
-			"template-id" {  
+		    "template-id" {  
 				incr pos
 				if { $pos >= $n_args } { 
 					puts "error"
@@ -1082,7 +1068,7 @@ proc oif_add_object { args } {
 				set origin_Z [lindex $args $pos]
 				incr pos
 			}
-			"check" {  
+	        "check" {  
 				incr pos
 				if { $pos >= $n_args } { 
 					puts "error check"
@@ -1111,16 +1097,6 @@ proc oif_add_object { args } {
 		puts "Something went wrong with mandatory arguments for creating object" 
 		return
 	}
-	
-#--------------------------------------------------------------------------------------------	
-# checking whether correct object-id has been given
-	if { $object_id != $oif_n_objects } {
-		puts "error: Cannot create an object with object_id $object_id,"
-		puts "	because either one such object already exists or the object_id does not follow consecutively."
-		puts "	The next available object_id is $oif_n_objects."
-		exit	
-	}
-	
 #--------------------------------------------------------------------------------------------
 # set files for output check
 	if {$check_output == 1} {
@@ -1423,11 +1399,12 @@ proc oif_object_set { args } {
 	global oif_ntriangles
 	global oif_nedges
 	global oif_triangles
+	global oif_startingParticles
+	global oif_startingTriangles
 	global oif_firstBondId
 	global oif_firstPartId
 	global oif_objects
-	global oif_object_starting_particles
-	global oif_template_starting_triangles
+
 
 	set n_args 0
 		# counts the number of arguments
@@ -1634,13 +1611,13 @@ proc oif_object_output { args } {
 	global oif_nedges
 	global oif_triangles
 	global oif_object_starting_particles
+	global oif_startingTriangles
 	global oif_firstBondId
 	global oif_firstPartId
 	global oif_firstTriangleId
 	global oif_objects
 	global oif_template_starting_triangles
 	global oif_template_triangles
-	
 	set n_args 0
 		# counts the number of arguments
 	foreach arg $args {
@@ -1768,6 +1745,7 @@ proc oif_object_analyze { args } {
 	global oif_nedges
 	global oif_triangles
 	global oif_object_starting_particles
+	global oif_startingTriangles
 	global oif_firstBondId
 	global oif_firstPartId
 	global oif_firstTriangleId
@@ -2093,6 +2071,7 @@ proc oif_mesh_analyze { args } {
 	global oif_nedges
 	global oif_triangles
 	global oif_object_starting_particles
+	global oif_startingTriangles
 	global oif_firstBondId
 	global oif_firstPartId
 
