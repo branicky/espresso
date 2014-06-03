@@ -2125,6 +2125,15 @@ proc oif_object_output { args } {
 				set vtk_pos_file [lindex $args $pos]
 				incr pos
 			}
+			"vtk-aff" {  
+				incr pos
+				if { $pos >= $n_args } { 
+					puts "error 4"
+					break
+				}
+				set vtk_aff_file [lindex $args $pos]
+				incr pos
+			}
 			"mesh-nodes" {  
 				incr pos
 				if { $pos >= $n_args } { 
@@ -2182,6 +2191,41 @@ proc oif_object_output { args } {
 			puts $part "3 [lindex $oif_template_triangles $iii]"
 		}
 		close $part
+	}
+
+	if { $vtk_aff_file != ""} {
+		set firstPartId [lindex $oif_object_starting_particles $objectID]
+		set nnode [lindex $oif_nparticles $objectID]
+		set aff_nbonds 0
+
+		for { set iii $firstPartId } { $iii < [expr $firstPartId + $nnode] } { incr iii } {
+			set tmppos [part $iii print pos]
+			set tmpdata [part $iii print affinity]
+			if { [lindex $tmpdata 0] != -1 } { 
+				set aff_bondsA($aff_nbonds) $tmpdata 
+				set aff_bondsB($aff_nbonds) $tmppos
+				incr aff_nbonds
+			}
+		}
+		
+		if { $aff_nbonds > -1} {
+
+			set part [open $vtk_aff_file "w"]
+			puts $part "# vtk DataFile Version 3.0"
+			puts $part "Data"
+			puts $part "ASCII"
+			puts $part "DATASET POLYDATA"
+			puts $part "POINTS [expr 2*$aff_nbonds] float"
+			for { set iii 0 } { $iii < $aff_nbonds } { incr iii } {
+				puts $part "$aff_bondsA($iii)"
+				puts $part "$aff_bondsB($iii)"
+			}
+			puts $part "LINES $aff_nbonds [expr 3*$aff_nbonds]"
+			for { set iii 0 } { $iii < $aff_nbonds } { incr iii } {
+				puts $part "2 [expr 2*$iii] [expr 2*$iii + 1]"
+			}
+			close $part
+		}
 	}
 
 	if { $mesh_nodes_file != ""} {
@@ -2275,6 +2319,15 @@ proc oif_object_analyze { args } {
 				incr pos
 				set surface 0.0
 			}
+			"affinity" {  
+				incr pos
+				if { $pos >= $n_args } { 
+					puts "error 4"
+					break
+				}
+				set affinity [lindex $args $pos]
+				incr pos
+			}
 			"pos-bounds" {  
 				incr pos
 				if { $pos >= $n_args } { 
@@ -2365,6 +2418,37 @@ proc oif_object_analyze { args } {
 		set velZ [expr $velZ/$nnode]
 		set vel [list $velX $velY $velZ]
 		return $vel
+	}
+
+	if { $affinity != "" } {
+		set firstPartId [lindex $oif_object_starting_particles $objectID]
+		set nnode [lindex $oif_nparticles $objectID]
+		set n_bonds 0
+		set total_length 0
+		for { set iii $firstPartId } { $iii < [expr $firstPartId + $nnode] } { incr iii } {
+			set bond_site [part $iii print affinity]
+			set bsiteX [lindex $bond_site 0]
+			set bsiteY [lindex $bond_site 1]
+			set bsiteZ [lindex $bond_site 2]
+			if { $bsiteX != -1 || $bsiteY != -1 || $bsiteZ != -1 } {
+				incr n_bonds
+				set part_pos [part $iii print pos]
+				set posX [lindex $part_pos 0]
+				set posY [lindex $part_pos 1]
+				set posZ [lindex $part_pos 2]
+				set total_length [expr $total_length + sqrt(($posX - $bsiteX)*($posX - $bsiteX) + ($posY - $bsiteY)*($posY - $bsiteY) + ($posZ - $bsiteZ)*($posZ - $bsiteZ))] 
+			}
+		}
+		if { $n_bonds > 0 } { set total_length [expr 1.0*$total_length / (1.0*$n_bonds)] }
+		if { $affinity == "nbonds" } { return $n_bonds }
+		if { $affinity == "aver-bond-length" } { 
+			return $total_length 
+		}
+		if { $affinity == "all" } { 
+			set answer [list "nbonds" $n_bonds "bond-length" $total_length]
+			return $answer 
+		}
+		
 	}
 
 	if {$volume != -1} {
