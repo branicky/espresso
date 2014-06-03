@@ -33,6 +33,7 @@
 #include "../mol_cut.hpp"
 #include "../integrate.hpp"
 #include "../random.hpp"
+#include "../grid.hpp"
 
 
 #ifdef AFFINITY
@@ -52,7 +53,7 @@ inline void add_affinity_pair_force(Particle *p1, Particle *p2, IA_parameters *i
 *
 * Algorithm: 
 * 1. First check is whether I am in the cut-off radius: ?dist < affinity_cut?.
-* 2. Then I check whether there exist a bond from the current particle: ?bond_site != -1? 
+* 2. Then I check whether there exists a bond from the current particle: ?bond_site != -1? 
 * 3. If yes, then I maintaind the bond. I put the forces and afterwards I decide whether the bond will brake or not.
 * 4. If no, I maintain the creation of a bond. First I check whether I am in the area of possible bond creation: ?dist < affinity_r0?
 * 5. If yes, I run the decision algorithm for bond creation and I either create or does not create the bond.

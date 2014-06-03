@@ -39,9 +39,7 @@
 #include "bmhtf-nacl.hpp"
 #include "buckingham.hpp"
 #include "soft_sphere.hpp"
-#ifdef AFFINITY
 #include "object-in-fluid/affinity.hpp"
-#endif
 #include "hat.hpp"
 #include "ljcos.hpp"
 #include "ljcos2.hpp"
