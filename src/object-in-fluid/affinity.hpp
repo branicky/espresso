@@ -121,21 +121,7 @@ inline void add_affinity_pair_force(Particle *p1, Particle *p2, IA_parameters *i
   }
 }
 
-///** calculate soft-sphere energy between particle p1 and p2. */
-//MDINLINE double soft_pair_energy(Particle *p1, Particle *p2, IA_parameters *ia_params,
-				//double d[3], double dist)
-//{
-  //double r_off;
 
-  //if(CUTOFF_CHECK(dist < ia_params->soft_cut+ia_params->soft_offset)) {
-    //r_off = dist - ia_params->soft_offset;
-    ///* normal case: resulting force/energy smaller than zero. */
-   
-    //return soft_energy_r(ia_params->soft_a, ia_params->soft_n, r_off);
-    
-  //}
-  //return 0.0;
-//}
 
 #endif /* ifdef AFFINITY */
 #endif

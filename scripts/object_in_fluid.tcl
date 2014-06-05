@@ -73,7 +73,7 @@ proc oif_init {} {
 
     global list oif_template_bending_incidences
     set oif_template_bending_incidences { }
-    # a list of bending incidences (4 particle IDs in each row; number of rows equals number of rows in oif_template_edges). These are used so that during the creation of bending bonds one does not have to recalculate the bending incidences repeatedly. Number of bending bonds of a given template is equal to number of edges of this template, so oif_template element num_of_edges is used to determine which incidences belong to which object.
+    # a list of bending incidences (4 particle IDs in each row; number of rows equals number of rows in oif_template_edges). These are used so that during the creation of bending bonds one does not have to recalculate the bending incidences repeatedly. Number of bending interactions of a given template is equal to number of edges of this template.
 
     global list oif_object_starting_particles
     set oif_object_starting_particles { }
@@ -749,7 +749,7 @@ proc oif_create_template { args } {
 			"nodes-file" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error"
+					puts "error in oif_create_template: missing nodes-file"
 					break
 				}
 				set filenamenodes [lindex $args $pos]
@@ -758,7 +758,7 @@ proc oif_create_template { args } {
 			"ks" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error"
+					puts "error in oif_create_template: missing value of stretching coefficient ks"
 					break
 				}
 				set ks [lindex $args $pos]
@@ -767,7 +767,7 @@ proc oif_create_template { args } {
 			"kb" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error"
+					puts "error in oif_create_template: missing value of bending coefficient kb"
 					break
 				}
 				set kb [lindex $args $pos]
@@ -776,7 +776,7 @@ proc oif_create_template { args } {
 			"kal" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error"
+					puts "error in oif_create_template: missing value of local area coefficient kal"
 					break
 				}
 				set kal [lindex $args $pos]
@@ -785,7 +785,7 @@ proc oif_create_template { args } {
 			"kag" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error"
+					puts "error in oif_create_template: missing value of global area coefficient kag"
 					break
 				}
 				set kag [lindex $args $pos]
@@ -794,7 +794,7 @@ proc oif_create_template { args } {
 			"kv" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error"
+					puts "error in oif_create_template: missing value of volume coefficient kv"
 					break
 				}
 				set kv [lindex $args $pos]
@@ -803,7 +803,7 @@ proc oif_create_template { args } {
 			"triangles-file" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error"
+					puts "error in oif_create_template: missing triangles-file"
 					break
 				}
 				set filenametriangles [lindex $args $pos]
@@ -812,19 +812,19 @@ proc oif_create_template { args } {
 			"stretch" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error"
+					puts "error in oif_create_template: expecting 3 coefficients for stretching of the object"
 					break
 				}
 				set stretch_X [lindex $args $pos]
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error"
+					puts "error in oif_create_template: expecting 3 coefficients for stretching of the object"
 					break
 				}
 				set stretch_Y [lindex $args $pos]
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error"
+					puts "error in oif_create_template: expecting 3 coefficients for stretching of the object"
 					break
 				}
 				set stretch_Z [lindex $args $pos]
@@ -833,7 +833,7 @@ proc oif_create_template { args } {
 		        "check" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error"
+					puts "error in oif_create_template: missing value for check_output"
 					break
 				}
 				set check_output [lindex $args $pos]
@@ -842,14 +842,14 @@ proc oif_create_template { args } {
 		        "template-id" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error"
+					puts "error in oif_create_template: missing template id"
 					break
 				}
 				set template_id [lindex $args $pos]
 				incr pos
 			}
 			default { 
-				puts "error" 
+				puts "error in oif_create_template: unknown keyword" 
 				set pos $n_args
 			}
 		}  
@@ -1613,7 +1613,7 @@ proc oif_add_object { args } {
 # find and read the template for the given object
 
  	# there are 15 elements in one row of oif_templates:
-	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
+	# nnodes, nedges, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
 	# get the data form oif_templates list
 	set template [lindex $oif_templates $template_id]
 
@@ -1630,12 +1630,15 @@ proc oif_add_object { args } {
 	set start_id_of_particles 0
 	set start_id_of_edges 0
 	set start_id_of_triangles 0
+	set start_id_of_bending_incidences 0
 	for {set i 0} {$i < $template_id} {incr i} {
 	    set start_id_of_particles [expr $start_id_of_particles + [lindex [lindex $oif_templates $i] 0]]
 	    set start_id_of_edges [expr $start_id_of_edges + [lindex [lindex $oif_templates $i] 1]]
 	    set start_id_of_triangles [expr $start_id_of_triangles + [lindex [lindex $oif_templates $i] 2]]
+	    if { [lindex [lindex $oif_templates $i] 5] != 0.0 } {
+		set start_id_of_bending_incidences [expr $start_id_of_bending_incidences + [lindex [lindex $oif_templates $i] 1]]
+	    }
 	}
-	set start_id_of_bending_incidences $start_id_of_edges
 	 
  	# recover particles of the given template  
 	for {set i 0} {$i < $mesh_nnodes} {incr i} {
@@ -1646,7 +1649,6 @@ proc oif_add_object { args } {
 	}
 
 	# recover triangles of the given template
-
 	for {set i 0} {$i < $mesh_ntriangles} {incr i} {
 	    set triangle_triplet [lindex $oif_template_triangles [expr $start_id_of_triangles+$i]]
 	    set mesh_triangles($i,0) [lindex $triangle_triplet 0]
@@ -1663,8 +1665,9 @@ proc oif_add_object { args } {
 
 	# recover bending incidences of the given template
 	# template data:
-	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter
+	# nnodes, nedges, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
 	set kb_from_template [lindex $template 5]
+
 	if { $kb_from_template != 0.0 } {
 		for {set i 0} {$i < $mesh_nedges} {incr i} {
 		    set bending_quartet [lindex $oif_template_bending_incidences [expr $start_id_of_bending_incidences+$i]]
@@ -1735,7 +1738,7 @@ proc oif_add_object { args } {
 #--------------------------------------------------------------------------------------------
 # generation of stretching force bonds:
 	# template data
-	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
+	# nnodes, nedges, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
 	set ks_from_template [lindex $template 3]
 	if { $ks_from_template != 0.0 } {
 		if {$check_output == 1} { 
@@ -1762,7 +1765,7 @@ proc oif_add_object { args } {
 #--------------------------------------------------------------------------------------------
 # generation of bending force bonds:
 	# template data
-	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
+	# nnodes, nedges, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
 	set kb_from_template [lindex $template 5]
 	if { $kb_from_template != 0.0 } {
 		if {$check_output == 1} { 
@@ -1792,7 +1795,7 @@ proc oif_add_object { args } {
 #--------------------------------------------------------------------------------------------
 # generation of local area force bonds
 	# template data
-	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
+	# nnodes, nedges, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
 	set kal_from_template [lindex $template 7]
 	if { $kal_from_template != 0.0 } {
 
@@ -1819,7 +1822,7 @@ proc oif_add_object { args } {
 #--------------------------------------------------------------------------------------------
 # generation of global area force bonds
 	# template data
-	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
+	# nnodes, nedges, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
 	set kag_from_template [lindex $template 9]
 	if { $kag_from_template != 0.0 } {
 
@@ -1845,7 +1848,7 @@ proc oif_add_object { args } {
 #--------------------------------------------------------------------------------------------
 # generation of volume force bonds
 	# template data
-	# nnodes, nparticles, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
+	# nnodes, nedges, ntriangles, ks, start_id_of_ks_inter, kb, start_id_of_kb_inter, kal, start_id_of_kal_inter, kag, start_id_of_kag_inter, kv, start_id_of_kv_inter, S_0, V_0
 	set kv_from_template [lindex $template 11]
 	if { $kv_from_template != 0.0 } {
 		if {$check_output == 1} { 
@@ -1895,7 +1898,7 @@ proc oif_object_set { args } {
 		incr n_args
     }
 	if { $n_args == 0 } {
-		puts "Mandatory arguments are: object's ID (id)"
+		puts "Mandatory arguments are: object's ID"
 		return 0
 	}
 
@@ -2119,7 +2122,7 @@ proc oif_object_output { args } {
 			"vtk-pos" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error 4"
+					puts "error in oif_object_output: missing output file for writing current positions"
 					break
 				}
 				set vtk_pos_file [lindex $args $pos]
@@ -2128,7 +2131,7 @@ proc oif_object_output { args } {
 			"vtk-aff" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error 4"
+					puts "error in oif_object_output: missing output file for writing affinity bonds"
 					break
 				}
 				set vtk_aff_file [lindex $args $pos]
@@ -2137,7 +2140,7 @@ proc oif_object_output { args } {
 			"mesh-nodes" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error 4"
+					puts "error in oif_object_output: missing output file for writing mesh nodes"
 					break
 				}
 				set mesh_nodes_file [lindex $args $pos]
@@ -2146,14 +2149,14 @@ proc oif_object_output { args } {
 			"object-id" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error 4"
+					puts "error in oif_object_output: missing object-id"
 					break
 				}
 				set objectID [lindex $args $pos]
 				incr pos
 			}
 			default { 
-				puts "error rets" 
+				puts "error in oif_object_output: incorrect keyword" 
 				set pos $n_args
 			}
 		}  
@@ -2261,7 +2264,7 @@ proc oif_object_output { args } {
 
 
 proc oif_object_analyze { args } {
-	# acces global variables defined in init_objects_in_fluid.tcl:
+	# access global variables 
 	global oif_n_objects
 	global oif_nparticles
 	global oif_ntriangles
@@ -2285,7 +2288,7 @@ proc oif_object_analyze { args } {
 		incr n_args
     }
 	if { $n_args == 0 } {
-		puts "Mandatory arguments are: object's ID (id)"
+		puts "Mandatory arguments are: object's ID"
 		return 0
 	}
 
@@ -2322,7 +2325,7 @@ proc oif_object_analyze { args } {
 			"affinity" {  
 				incr pos
 				if { $pos >= $n_args } { 
-					puts "error 4"
+					puts "error in oif_object_analyze: type of output for affinity missing (possible choices: nbonds, aver-bond-length, all)"
 					break
 				}
 				set affinity [lindex $args $pos]
@@ -2772,9 +2775,13 @@ proc oif_object_analyze { args } {
 
 			set start_id_of_nodes 0
 			set start_id_of_edges 0
+			set start_id_of_bending_incidences 0
 			for {set i 0} {$i < $template_id} {incr i} {
 			    set start_id_of_nodes [expr $start_id_of_nodes + [lindex [lindex $oif_templates $i] 0]]
 			    set start_id_of_edges [expr $start_id_of_edges + [lindex [lindex $oif_templates $i] 1]]
+			    if { [lindex [lindex $oif_templates $i] 5] != 0.0 } {
+				set start_id_of_bending_incidences [expr $start_id_of_bending_incidences + [lindex [lindex $oif_templates $i] 1]]
+			    }
 			}
 
 			# recover particles from this object's template  
@@ -2787,7 +2794,7 @@ proc oif_object_analyze { args } {
 
 			# recover bending incidences from this object's template
 			for {set i 0} {$i < $nedges} {incr i} {
-			    set incidence [lindex $oif_template_bending_incidences [expr $start_id_of_edges+$i]]
+			    set incidence [lindex $oif_template_bending_incidences [expr $start_id_of_bending_incidences + $i]]
 			    set mesh_incidences($i,0) [lindex $incidence 0]
 			    set mesh_incidences($i,1) [lindex $incidence 1]
 			    set mesh_incidences($i,2) [lindex $incidence 2]
