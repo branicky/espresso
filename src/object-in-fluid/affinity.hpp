@@ -83,15 +83,33 @@ inline void add_affinity_pair_force(Particle *p1, Particle *p2, IA_parameters *i
 			for(j=0;j<3;j++)
 				force[j] += fac * vec[j]/len;
 			// Decision whether I should break the bond:
-			// The random probability mechanism should be implemented, for now I just decide that bond breaks whenever it is longer than 1.5*r0.
-			if (dist > 1.5*ia_params->affinity_r0) {
+			// The random decicion algorithm is much more complicated with Fd detachment force etc. Here, I use much simpler rule, the same as with Kon, except that the probability of bond breakage increases with prolongation of the bond. If the bond reaches 
+			double Poff = 1.0 - exp( - ia_params->affinity_Koff*0.000001*time_step);
+			double difr = 1.0 - Poff;
+			if ((len > ia_params->affinity_r0) && (len < 2.0*ia_params->affinity_r0)) {
+				//printf("Poff = %lf ",Poff);
+				//Poff = Poff + (1.0*len/ia_params->affinity_r0 - 1.0)*difr;
+				double decide = d_random();
+				if ( decide < Poff ) 
+				{
+						for(j=0;j<3;j++) p1->p.bond_site[j] = -1;
+						printf("breaking: Poff = %f, decide = %f", Poff, decide);
+				}
+
+			} else if (len > 2.0*ia_params->affinity_r0)  {
 				for(j=0;j<3;j++) p1->p.bond_site[j] = -1;
+					//printf("breaking: out of cut");
 			}
+
+			// The random probability mechanism should be implemented, for now I just decide that bond breaks whenever it is longer than 1.5*r0.
+			//if (dist > 1.5*ia_params->affinity_r0) {
+				//for(j=0;j<3;j++) p1->p.bond_site[j] = -1;
+			//}
 		}
 		else if (dist < ia_params->affinity_r0)
 		{ // Bond does not exist, we are inside of possible bond creation area, lets talk about creating a bond
 			// The random probability mechanism should be implmented, for now I just creat the bond
-			double Pon = 1.0 - exp( - ia_params->affinity_Kon*time_step);
+			double Pon = 1.0 - exp( - ia_params->affinity_Kon*0.000001*time_step);
 			// The probability is given by function Pon(x)= 1 - e^(-x) where x is Kon*dt. Here is a table of values of this function, just to have an idea about the values
 			// x		|	0		|	0.25	|	0.5		|	0.75	|	1.0		|	1.5		|	2.0		|	3.0		|	5.0	
 			// Pon(x) 	|	0		|	0.22	| 	0.39	|	0.52	|	0.63	| 	0.77	|	0.84	| 	0.95	|	0.99	

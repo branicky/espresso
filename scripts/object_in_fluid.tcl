@@ -2428,6 +2428,10 @@ proc oif_object_analyze { args } {
 		set nnode [lindex $oif_nparticles $objectID]
 		set n_bonds 0
 		set total_length 0
+		set min_bond_length 10000000
+		set max_bond_length -10000000
+		set min_x_bond 10000000
+		set max_x_bond -10000000
 		for { set iii $firstPartId } { $iii < [expr $firstPartId + $nnode] } { incr iii } {
 			set bond_site [part $iii print affinity]
 			set bsiteX [lindex $bond_site 0]
@@ -2439,7 +2443,12 @@ proc oif_object_analyze { args } {
 				set posX [lindex $part_pos 0]
 				set posY [lindex $part_pos 1]
 				set posZ [lindex $part_pos 2]
-				set total_length [expr $total_length + sqrt(($posX - $bsiteX)*($posX - $bsiteX) + ($posY - $bsiteY)*($posY - $bsiteY) + ($posZ - $bsiteZ)*($posZ - $bsiteZ))] 
+				set curr_bond_length [expr sqrt(($posX - $bsiteX)*($posX - $bsiteX) + ($posY - $bsiteY)*($posY - $bsiteY) + ($posZ - $bsiteZ)*($posZ - $bsiteZ))]
+				set total_length [expr $total_length + $curr_bond_length] 
+				if { $curr_bond_length < $min_bond_length } { set min_bond_length $curr_bond_length}
+				if { $curr_bond_length > $max_bond_length } { set max_bond_length $curr_bond_length}
+				if { $bsiteX < $min_x_bond } { set min_x_bond $bsiteX}
+				if { $bsiteX > $max_x_bond } { set max_x_bond $bsiteX}
 			}
 		}
 		if { $n_bonds > 0 } { set total_length [expr 1.0*$total_length / (1.0*$n_bonds)] }
@@ -2447,8 +2456,20 @@ proc oif_object_analyze { args } {
 		if { $affinity == "aver-bond-length" } { 
 			return $total_length 
 		}
+		if { $affinity == "min-bond-length" } { 
+			return $min_bond_length 
+		}
+		if { $affinity == "max-bond-length" } { 
+			return $max_bond_length 
+		}
+		if { $affinity == "min-x-bond" } { 
+			return $min_x_bond 
+		}
+		if { $affinity == "max-x-bond" } { 
+			return $max_x_bond 
+		}
 		if { $affinity == "all" } { 
-			set answer [list "nbonds" $n_bonds "bond-length" $total_length]
+			set answer [list "nbonds" $n_bonds "bond-length" $total_length "min-bond-length" $min_bond_length "max-bond-length" $max_bond_length "min-x-bond" $min_x_bond "max-x-bond" $max_x_bond]
 			return $answer 
 		}
 		
